@@ -6,8 +6,7 @@ const _ = require('lodash');
 var connection = mysql.createConnection({
     host: '127.0.0.1',
     user: 'root',
-    password: 'aA123456789^Aa@',
-    //password: '',
+    password: '',
     database: 'tradding_db'
 });
 
@@ -31,22 +30,19 @@ module.exports.getLastResult = function() {
     return new Promise((resolve, reject) => {
         connection.query("select * from tradding_data order by id desc limit 1", function(err, result, fields) {
             if (err) reject(err);
-            if (result.length === 0) {
-                reject(null);
-            }
             resolve(result[0]);
         });
     });
 }
 
 // Lấy số dư hiện tại
-module.exports.getBudgetOfBot = function(botId) {
+module.exports.getBotInfo = function(botId) {
     return new Promise((resolve, reject) => {
         console.log(`select * from bot where id=${botId}`);
         connection.query(`select * from bot where id=${botId}`, function(err, result, fields) {
             if (err) reject(err);
             if (result.length === 0) {
-                reject(null);
+                reject(new Error("getBotInfo"));
             }
             resolve(result[0]);
         });
@@ -64,18 +60,38 @@ module.exports.updateBugget = function(botId, budget) {
     }
     // ghi kết quả lệnh vừa rồi
 module.exports.insertToStatistics = function(botId, result, isQuickOrder, traddingData) {
-    console.log(`INSERT INTO statistics (result, bot_id, created_time, is_quick_order) VALUES ('${result}', ${botId}, NOW(), ${isQuickOrder})`);
-    var sql = `INSERT INTO statistics (result, bot_id, created_time, is_quick_order, tradding_data) VALUES ('${result}', ${botId}, NOW(), ${isQuickOrder}, ${traddingData})`;
-    connection.query(sql, function(err, result) {
-        if (err) throw err;
-        console.log("1 record inserted");
+    return new Promise((resolve, reject) => {
+        console.log(`INSERT INTO statistics (result, bot_id, created_time, is_quick_order) VALUES ('${result}', ${botId}, NOW(), ${isQuickOrder})`);
+        var sql = `INSERT INTO statistics (result, bot_id, created_time, is_quick_order, tradding_data) VALUES ('${result}', ${botId}, NOW(), ${isQuickOrder}, ${traddingData})`;
+        connection.query(sql, function(err, result) {
+            if (err) throw err;
+            console.log("1 record inserted");
+            resolve(result);
+        });
     });
+
 }
 
 module.exports.getLastStatistics = function(botId) {
     return new Promise((resolve, reject) => {
-        connection.query(`select * from statistics where bot_id=${botId} and result != 'NOT_ORDER' order by id desc limit 1`, function(err, result, fields) {
+        connection.query(`select * from statistics where bot_id=${botId} order by id desc limit 1`, function(err, result, fields) {
             if (err) reject(err);
+            // if (result.length === 0) {
+            //     reject(null);
+            // }
+            resolve(result[0]);
+        });
+    });
+}
+
+
+module.exports.getLastTraddingResult = function(botId) {
+    return new Promise((resolve, reject) => {
+        connection.query(`select * from statistics where bot_id=${botId} and result!='NOT_ORDER' order by id desc limit 1`, function(err, result, fields) {
+            if (err) reject(err);
+            if (result.length === 0) {
+                reject(new Error("getLastTraddingResult"));
+            }
             resolve(result[0]);
         });
     });
@@ -103,6 +119,7 @@ module.exports.updateStatusForStatistics = function(botId) {
         connection.query(`update statistics set is_statistics=1 where bot_id=${botId} and is_statistics=0`, function(err, result, fields) {
             if (err) throw err;
             console.log("UPDATE STATICS!");
+            resolve(result);
         });
     });
 }
@@ -112,7 +129,8 @@ module.exports.insertOrder = function(order, price, isQuickOrder, botId) {
         console.log(`insert into orders(orders, price, is_quick_order, created_time, bot_id) values (${order}, ${price}, ${isQuickOrder}, NOW(), ${botId});`);
         connection.query(`insert into orders(orders, price, is_quick_order, created_time, bot_id) values (${order}, ${price}, ${isQuickOrder}, NOW(), ${botId})`, function(err, result, fields) {
             if (err) throw err;
-            console.log("UPDATE STATICS!");
+            console.log("INSERT ORDER!");
+            resolve(result);
         });
     });
 }
@@ -122,7 +140,7 @@ module.exports.getOrder = function(botId) {
         connection.query(`select * from orders where bot_id=${botId} order by id desc limit 1`, function(err, result, fields) {
             if (err) reject(err);
             if (result.length === 0) {
-                reject(null);
+                reject(new Error("getOrder"));
             }
             resolve(result[0]);
         });
@@ -142,7 +160,67 @@ module.exports.statisticDay = function(botId, timeAfter) {
             } else {
                 console.log("Has Not data for statistics Days");
             }
+        });
+    });
+}
 
+
+module.exports.initSessionVolatility = function(botId) {
+    return new Promise((resolve, reject) => {
+        console.log(`update bot set session_volatility=0 where id=${botId}`);
+        return new Promise((resolve, reject) => {
+            connection.query(`update bot set session_volatility=0, is_running=1 where id=${botId}`, function(err, result, fields) {
+                if (err) throw err;
+                resolve(result);
+                console.log("INIT SESSION VOLALITY");
+            });
+        });
+    });
+
+}
+
+module.exports.stopOrStartBot = function(botId, isRunning) {
+    console.log(`update bot set is_running=${isRunning}, updated_at=now() where id=${botId}`);
+    return new Promise((resolve, reject) => {
+        connection.query(`update bot set is_running=${isRunning}, updated_at=now() where id=${botId}`, function(err, result, fields) {
+            if (err) throw err;
+            resolve(result);
+            console.log("Change bot status");
+        });
+    });
+}
+
+module.exports.updateVolatiltyOfBot = function(botId, volatility) {
+    return new Promise((resolve, reject) => {
+        connection.query(`update bot set session_volatility=${volatility} where id=${botId}`, function(err, result, fields) {
+            if (err) throw err;
+            resolve(result);
+            console.log("UPDATE VOLATILITY");
+        });
+    });
+}
+
+module.exports.getStatisticByLimit = function(botId, limit) {
+    return new Promise((resolve, reject) => {
+        console.log(`select * from statistics where bot_id=${botId} order by id DESC limit ${limit}`);
+        connection.query(`select * from statistics where bot_id=${botId} order by id DESC limit ${limit}`, function(err, result, fields) {
+            console.log(result.length);
+            if (err) reject(err);
+            resolve(result);
+        });
+    });
+}
+
+
+module.exports.getLastOrder = function(botId) {
+    return new Promise((resolve, reject) => {
+        console.log(`select * from orders where bot_id=${botId} order by id desc limit 1`);
+        connection.query(`select * from orders where bot_id=${botId} order by id desc limit 1`, function(err, result, fields) {
+            if (err) reject(err);
+            if (result.length === 0) {
+                reject(null);
+            }
+            resolve(result[0]);
         });
     });
 }
