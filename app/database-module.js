@@ -6,7 +6,8 @@ const _ = require('lodash');
 var connection = mysql.createConnection({
     host: '127.0.0.1',
     user: 'root',
-    password: '',
+    password: 'aA123456789^Aa@',
+    ///password: '',
     database: 'tradding_db'
 });
 
@@ -268,5 +269,3 @@ module.exports.initBot = function() {
         });
     });
 }
-
-
