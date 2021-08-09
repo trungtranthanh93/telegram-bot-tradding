@@ -224,3 +224,49 @@ module.exports.getLastOrder = function(botId) {
         });
     });
 }
+
+module.exports.clearDataStatistic = function() {
+    return new Promise((resolve, reject) => {
+        console.log(`Xóa dữ liệu thống kê`);
+        connection.query(`delete from statistics`, function(err, result, fields) {
+            if (err) throw err;
+            resolve(result);
+            console.log("Đã xóa");
+        });
+    });
+}
+
+module.exports.clearDataOrders = function() {
+    return new Promise((resolve, reject) => {
+        console.log(`Xóa dữ liệu đánh lệnh`);
+        connection.query(`delete from orders`, function(err, result, fields) {
+            if (err) throw err;
+            resolve(result);
+            console.log("Đã xóa");
+        });
+    });
+}
+
+module.exports.clearData = function() {
+    return new Promise((resolve, reject) => {
+        console.log(`Xóa kết quả`);
+        connection.query(`delete from tradding_data`, function(err, result, fields) {
+            if (err) throw err;
+            resolve(result);
+            console.log("Đã xóa");
+        });
+    });
+}
+
+module.exports.initBot = function() {
+    return new Promise((resolve, reject) => {
+        console.log(`Cập nhật cho bot`);
+        connection.query(`update bot set is_running=1, updated_at=now(), session_volatility = 0, budget=100`, function(err, result, fields) {
+            if (err) throw err;
+            resolve(result);
+            console.log("Đã cập nhật");
+        });
+    });
+}
+
+

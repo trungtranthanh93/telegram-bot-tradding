@@ -154,6 +154,7 @@ const job = new cron.CronJob({
             await sleep(5000);
             let statisc = await statisticDay(botId, STATISTIC_TIME_AFTER);
             if (statisc) {
+                let sessionNumber = parseInt(statisc.length/STATISTIC_TIME_AFTER);
                 let statisticsMsg = [];
                 statisticsMsg.push(`\u{267B} Tổng kết ${STATISTIC_TIME_AFTER} lệnh:\n`);
                 let statisticalsTimeAfterStr = [];
@@ -202,8 +203,11 @@ const job = new cron.CronJob({
                     }
                 });
                 let winLoseRatio = (winOrder + quickWinOrder * 2) * 0.95 - (lostOrder + quickLostOrder * 2);
-                statisticsMsg.push(`Win ( lose ) : ${winLoseRatio}% \n`);
+                
+                statisticsMsg.push(`\u{267B} Phiên thứ ${sessionNumber}% \n`);
+                statisticsMsg.push(`Kết quả : ${winLoseRatio}% \n`);
                 statisticsMsg = statisticsMsg.concat(statisticalsTimeAfterStr);
+                statisticsMsg.push(`------------------------------------------------\n`);
                 statisticsMsg.push(`Tổng số lệnh THẮNG (từ 00:00) là: ${winOrderDay}\n`);
                 statisticsMsg.push(`Tổng số lệnh thắng gấp (từ 00: 00) là : ${quickWinOrderDay} \n`);
                 statisticsMsg.push(`Tổng số lệnh thua gấp (từ 00: 00) là ${quickLostOrderDay}`);
