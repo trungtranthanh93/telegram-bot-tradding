@@ -2,6 +2,8 @@
 // it augments the installed puppeteer with plugin functionality
 const puppeteer = require('puppeteer-extra');
 const database = require('./app/database-module');
+const cron = require('cron');
+
 // add recaptcha plugin and provide it your 2captcha token (= their apiKey)
 // 2captcha is the builtin solution provider but others would work as well.
 // Please note: You need to add funds to your 2captcha account for this to work
@@ -22,16 +24,25 @@ var leftTime = null;
 puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] }).then(async browser => {
     const page = await browser.newPage()
     await page.setDefaultNavigationTimeout(120000);
-    await page.goto('https://wefinex.net/login')
-    await page.type('input[type="email"]', 'trumikoran@gmail.com', { delay: 100 })
-    await page.type('input[type="password"]', '1zx2qwSa', { delay: 100 })
-    await page.click('button[type="submit"]')
+    await page.goto('https://pocinex.net/login')
+    await page.type('input[name="email"]', 'trumikoran@gmail.com', { delay: 100 })
+    await page.type('input[name="password"]', 'Trung12345678', { delay: 100 })
+    await page.click('#main-content > div > div > div > div.boxAuthentication.show > div > div.formWapper.w-100 > form > div.form-group.text-center > button')
         // That's it, a single line of code to solve reCAPTCHAs 🎉
     await page.solveRecaptchas()
 
     await Promise.all([
         page.waitForNavigation(),
     ])
+    const job = new cron.CronJob({
+        cronTime: '30 0 * * * *',
+        onTick: async function() {
+            await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
+        },
+        start: true,
+        timeZone: 'Asia/Ho_Chi_Minh' // Lưu ý set lại time zone cho đúng 
+    });
+    job.start()
     const cdp = await page.target().createCDPSession();
     await cdp.send('Network.enable');
     await cdp.send('Page.enable');
@@ -65,28 +76,6 @@ puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] }).then(as
     cdp.on('Network.webSocketFrameReceived', printResponse); // Fired when WebSocket message is received.
     cdp.on('Network.webSocketFrameSent', printResponse); // Fired when WebSocket message is sent.
 })
-
-// async function startJob() {
-//     let name = "Bán"
-//     do {
-//         let currentTime = new Date().getSeconds();
-//         if (beforeResult === 0) {
-//             name = "Mua"
-//         } else if (beforeResult === 1) {
-//             name = "Bán"
-//         }
-//         if (currentTime === 15) {
-//             bot.telegram.sendMessage(-516496456, `Hãy đánh lệnh ${name}`);
-//         }
-//         if (currentTime === 2) {
-//             if (beforeResult === lastResult) {
-//                 bot.telegram.sendMessage(-516496456, "Kết quả : Thắng");
-//             } else if (beforeResult !== null && beforeResult !== lastResult) {
-//                 bot.telegram.sendMessage(-516496456, "Kết quả : Thua");
-//             }
-//         }
-//     } while (true);
-// }
 
 function sleep(ms) {
     return new Promise((resolve) => {
