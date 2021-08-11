@@ -22,7 +22,7 @@ const BUY = 0;
 const SELL = 1;
 const STOP_LOSS_VALUE = -3;
 const MINUTE_LONGTIMEMILIS = 60 * 1000;
-const TELEGRAM_GROUP_ID = -1001529627893; // sau này sẽ quản lý ở db
+const TELEGRAM_GROUP_ID = -1001492649224; // sau này sẽ quản lý ở db
 initSessionVolatility(botId);
 var isFirst = true;
 const job = new cron.CronJob({
@@ -99,7 +99,7 @@ const job = new cron.CronJob({
             }
 
 
-            for (var i = 5; i > 0; i--) {
+            for (var i = 3; i > 0; i--) {
                 await sleep(1000);
                 bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `Hãy đánh lệnh sau ${i} giây `);
             }
@@ -205,7 +205,7 @@ const job = new cron.CronJob({
                 });
                 let winLoseRatio = (winOrder + quickWinOrder * 2) * 0.95 - (lostOrder + quickLostOrder * 2);
                 
-                statisticsMsg.push(`\u{267B} Phiên thứ ${sessionNumber}% \n`);
+                statisticsMsg.push(`\u{267B} Phiên thứ ${sessionNumber} (+1) \n`);
                 statisticsMsg.push(`Kết quả : ${winLoseRatio}% \n`);
                 statisticsMsg = statisticsMsg.concat(statisticalsTimeAfterStr);
                 statisticsMsg.push(`------------------------------------------------\n`);
