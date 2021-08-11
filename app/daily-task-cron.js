@@ -1,8 +1,6 @@
 const cron = require('cron');
-const bot = require('./telegram-module');
 const database = require('./database-module');
 
-bot.launch();
 
 console.log(parseInt(101/10));
 const job = new cron.CronJob({

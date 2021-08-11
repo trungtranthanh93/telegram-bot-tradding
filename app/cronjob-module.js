@@ -2,11 +2,11 @@ const cron = require('cron');
 const bot = require('./telegram-module');
 const database = require('./database-module');
 var moment = require('moment');
+var puppeteer = require('../tradding-data');
 
 // var message = "\u{1F600} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n \u{1F359} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n \u{2B06} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n \u{2B07} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n"
 // message += "\u{1F55D} Đồng hồ, \u{2B06}  Tăng , \u{2B07} Giảm ,\u{1F389} Thắng , \u{274C} Thua , \u{267B} Thống kê, \u{1F4B0} Tiền";
 //bot.telegram.sendMessage(-516496456, message);
-bot.launch();
 // Link unicode của icon telegram : https://apps.timwhitlock.info/emoji/tables/unicode
 
 const botId = 1;
@@ -22,7 +22,8 @@ const BUY = 0;
 const SELL = 1;
 const STOP_LOSS_VALUE = -3;
 const MINUTE_LONGTIMEMILIS = 60 * 1000;
-const TELEGRAM_GROUP_ID = -1001492649224; // sau này sẽ quản lý ở db
+const TELEGRAM_GROUP_ID = -1001492649224; // kênh tín hiệu
+//const TELEGRAM_GROUP_ID = -586450790; // sau này sẽ quản lý ở db
 initSessionVolatility(botId);
 var isFirst = true;
 const job = new cron.CronJob({
