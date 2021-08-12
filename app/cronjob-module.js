@@ -1,5 +1,6 @@
 const cron = require('cron');
 const bot = require('./telegram-module');
+//const bot = require('./telegram-test2'); // k push
 const database = require('./database-module');
 var moment = require('moment');
 var puppeteer = require('../tradding-data');
@@ -22,8 +23,8 @@ const BUY = 0;
 const SELL = 1;
 const STOP_LOSS_VALUE = -3;
 const MINUTE_LONGTIMEMILIS = 60 * 1000;
-const TELEGRAM_GROUP_ID = -1001492649224; // kênh tín hiệu
-//const TELEGRAM_GROUP_ID = -586450790; // sau này sẽ quản lý ở db
+const TELEGRAM_GROUP_ID = -1001492649224; // kênh tín hiệu 1
+//const TELEGRAM_GROUP_ID = -1001546623891; // sau này sẽ quản lý ở db // khong push
 initSessionVolatility(botId);
 var isFirst = true;
 const job = new cron.CronJob({
@@ -47,33 +48,29 @@ const job = new cron.CronJob({
         if (currentTimeSecond === 20 || currentTimeSecond === 19 || currentTimeSecond === 21) { // Vào lệnh
             console.log();
             if (dBbot.is_running !== IS_RUNNING) {
-                console.log("Check kết quả");
                 let currrentTime = new Date().getTime();
                 if (!checkRowOneForOrder() && (currrentTime - new Date(dBbot.updated_at).getTime()) >= 1 * MINUTE_LONGTIMEMILIS) {
                     let statistics = await getStatisticByLimit(botId, 3);
-                    if (isReOrder(statistics)) {
-                        console.log("đánh tiếp lệnh");
+                    if (await isReOrder(statistics)) {
+                        bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `SẴN SÀNG VÀO LỆNH!`);
                         stopOrStartBot(botId, IS_RUNNING);
                         initSessionVolatility(botId);
-                        console.log("Test 1");
+                        await sleep(1000);
                     } else {
+                        bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `Chưa đủ điều kiện vào lệnh`);
                         console.log("Không đủ điều kiện đánh lệnh -> Đợi tiếp");
                         stopOrStartBot(botId, 0);
-                        console.log("Test 2");
                         return;
                     }
                 } else {
                     stopOrStartBot(botId, 0);
-                    console.log("Test 3");
                     console.log("Bot đang dừng -> Chỉ thống kê lệnh, không đánh");
                     return;
                 }
             }
-            console.log("Tiếp lệnh");
             if (isQuickOrder === QUICK_ORDER) {
                 console.log("lệnh gấp -> Vào luôn k chờ");
             } else if (checkRowOneForOrder()) {
-                console.log("Test 4");
                 console.log("Lệnh thường -> Chờ kết quả hàng thứ nhất -> Không làm gì cả");
                 return;
             }
@@ -356,26 +353,30 @@ async function getLastOrder(botId) {
 
 // điều kiện để tiếp tục đánh lệnh // limit =3 
 async function isReOrder(statistics) {
+    console.log("Kiểm tra kết quả");
     console.log(statistics);
     statistics.forEach(element => {
         console.log("Kết quả : " + element.tradding_data);
     });
-    console.log("Hàng 1");
     if (statistics[2].tradding_data === BUY && statistics[1].tradding_data === BUY) {
         console.log("X X TIẾP TỤC ĐÁNH");
+        //bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `X X TIẾP TỤC ĐÁNH`);
         return true;
     }
     if (statistics[2].tradding_data === SELL && statistics[1].tradding_data === SELL) {
         console.log("D D TIẾP TỤC ĐÁNH");
+        //bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `D D TIẾP TỤC ĐÁNH`);
         return true;
     }
 
     if (statistics[2].tradding_data === BUY && statistics[1].tradding_data === SELL && statistics[0].tradding_data === BUY) {
+        //bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `X D X TIẾP TỤC ĐÁNH`);
         console.log("X D X TIẾP TỤC ĐÁNH");
         return true;
     }
 
     if (statistics[2].tradding_data === SELL && statistics[1].tradding_data === BUY && statistics[0].tradding_data === SELL) {
+        //bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `D X D TIẾP TỤC ĐÁNH`);
         console.log("D X D TIẾP TỤC ĐÁNH");
         return true;
     }
