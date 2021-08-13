@@ -3,7 +3,7 @@ const bot = require('./telegram-module');
 //const bot = require('./telegram-test2'); // k push
 const database = require('./database-module');
 var moment = require('moment');
-var puppeteer = require('../tradding-data');
+//var puppeteer = require('../tradding-data'); // khong push
 
 // var message = "\u{1F600} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n \u{1F359} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n \u{2B06} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n \u{2B07} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n"
 // message += "\u{1F55D} Đồng hồ, \u{2B06}  Tăng , \u{2B07} Giảm ,\u{1F389} Thắng , \u{274C} Thua , \u{267B} Thống kê, \u{1F4B0} Tiền";
@@ -16,7 +16,7 @@ const capital = 100;
 const WIN = "WIN";
 const LOSE = "LOSE";
 const NOT_ORDER = "NOT_ORDER";
-const STATISTIC_TIME_AFTER = 10;
+const STATISTIC_TIME_AFTER = 5;
 const NON_QUICK_ORDER = 0;
 const QUICK_ORDER = 1;
 const BUY = 0;
