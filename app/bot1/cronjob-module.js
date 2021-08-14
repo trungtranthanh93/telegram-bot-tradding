@@ -24,7 +24,7 @@ const SELL = 1;
 const STOP_LOSS_VALUE = -3;
 const MINUTE_LONGTIMEMILIS = 60 * 1000;
 const TELEGRAM_GROUP_ID = -1001492649224; // kênh tín hiệu 1
-//const TELEGRAM_GROUP_ID = -1001546623891; // sau này sẽ quản lý ở db // khong push
+//const TELEGRAM_GROUP_ID = -1001546623891; // sau này sẽ quản lý ở db // k push
 var isSentMessage = false;
 initSessionVolatility(botId);
 var isFirst = true;
