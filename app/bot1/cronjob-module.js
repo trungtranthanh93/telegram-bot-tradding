@@ -3,7 +3,6 @@ const bot = require('./telegram-module');
 //const bot = require('../telegram-test2'); // k push
 const database = require('../database-module');
 var moment = require('moment');
-//var puppeteer = require('../tradding-data'); // khong push
 
 // var message = "\u{1F600} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n \u{1F359} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n \u{2B06} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n \u{2B07} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n"
 // message += "\u{1F55D} Đồng hồ, \u{2B06}  Tăng , \u{2B07} Giảm ,\u{1F389} Thắng , \u{274C} Thua , \u{267B} Thống kê, \u{1F4B0} Tiền";
@@ -11,7 +10,10 @@ var moment = require('moment');
 // Link unicode của icon telegram : https://apps.timwhitlock.info/emoji/tables/unicode
 
 const botId = 1;
-const IS_RUNNING = 1;
+const BOT_NAME = "Bot Tín Hiệu 1";
+const RUNNING_STATUS = 1;
+const STOPPING_STATUS = 0;
+const DISABLE_STATUS = 3;
 const capital = 100;
 const WIN = "WIN";
 const LOSE = "LOSE";
@@ -26,6 +28,7 @@ const MINUTE_LONGTIMEMILIS = 60 * 1000;
 const TELEGRAM_GROUP_ID = -1001492649224; // kênh tín hiệu 1
 //const TELEGRAM_GROUP_ID = -1001546623891; // sau này sẽ quản lý ở db // k push
 var isSentMessage = false;
+const TAKE_PROFIT = 120;
 initSessionVolatility(botId);
 var isFirst = true;
 const job = new cron.CronJob({
@@ -42,6 +45,10 @@ const job = new cron.CronJob({
         }
         isSentMessage = false;
         var dBbot = await getBotInfo(botId);
+        if (dBbot.is_running === DISABLE_STATUS) {
+            console.log("Bot đủ target -> Dừng");
+            return;
+        }
         var orderPrice = 1;
         lastStatistics = await getLastStatistics(botId);
         if (!lastStatistics) {
@@ -58,7 +65,7 @@ const job = new cron.CronJob({
         
         isFirst = false;
         if (currentTimeSecond === 20 || currentTimeSecond === 19 || currentTimeSecond === 21) { // Vào lệnh
-            if (dBbot.is_running !== IS_RUNNING) {
+            if (dBbot.is_running === STOPPING_STATUS) {
                 console.log("Bot đang dừng, không đánh");
                 return;
             }
@@ -104,26 +111,26 @@ const job = new cron.CronJob({
             if (checkRowOneForStatistic() && isQuickOrder === NON_QUICK_ORDER) {
                 console.log("Kết quả của hàng thứ nhất lệnh thường. -> Chỉ lưu , k đánh lệnh.");
                 insertToStatistics(botId, NOT_ORDER, 0, parseInt(result.result));
-                if (dBbot.is_running !== IS_RUNNING) {
+                if (dBbot.is_running === STOPPING_STATUS) {
                     let currrentTime = new Date().getTime();
                     if ((currrentTime - new Date(dBbot.updated_at).getTime()) >= 1 * MINUTE_LONGTIMEMILIS) {
                         let statistics = await getStatisticByLimit(botId, 3);
                         if (await isReOrder(statistics)) {
                             bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `SẴN SÀNG VÀO LỆNH!`);
-                            stopOrStartBot(botId, IS_RUNNING);
+                            stopOrStartBot(botId, RUNNING_STATUS);
                             initSessionVolatility(botId);
                         } else {
                             console.log("Không đủ điều kiện đánh lệnh -> Đợi tiếp");
-                            stopOrStartBot(botId, 0);
+                            stopOrStartBot(botId, STOPPING_STATUS);
                         }
                     } else {
-                        stopOrStartBot(botId, 0);
+                        stopOrStartBot(botId, STOPPING_STATUS);
                         console.log("Bot đang dừng -> Chỉ thống kê lệnh, không đánh");
                     }
                 }
                 return;
             }
-            if (dBbot.is_running !== IS_RUNNING) {
+            if (dBbot.is_running === STOPPING_STATUS) {
                 console.log("Bot đang dừng -> Chỉ thống kê lệnh, không đánh");
                 insertToStatistics(botId, NOT_ORDER, 0, parseInt(result.result));
                 return;
@@ -142,6 +149,11 @@ const job = new cron.CronJob({
                 updateBugget(botId, budget);
                 insertToStatistics(botId, WIN, isQuickOrder, parseInt(result.result));
                 updateVolatiltyOfBot(botId, 0);
+                // Chốt lãi
+                if (budget >= TAKE_PROFIT) {
+                    bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `${BOT_NAME} đã đạt target. Quý khách hãy chuyển sang bot bắn tín hiệu 1.2 để lấy tín hiệu`);
+                    stopOrStartBot(botId, DISABLE_STATUS);
+                }
             } else { // THUA
                 var interest = -1 * orderPrice;
                 budget = roundNumber(budget + interest, 2);
@@ -151,9 +163,9 @@ const job = new cron.CronJob({
                 insertToStatistics(botId, LOSE, isQuickOrder, parseInt(result.result));
                 let volatility = dBbot.session_volatility + interest;
                 console.log("volatility " + volatility);
-                if (volatility <= STOP_LOSS_VALUE && dBbot.is_running === IS_RUNNING) {
+                if (volatility <= STOP_LOSS_VALUE && dBbot.is_running === RUNNING_STATUS) {
                     console.log("Dừng bot");
-                    await stopOrStartBot(botId, 0);
+                    await stopOrStartBot(botId, STOPPING_STATUS);
                     bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `Tạm dừng, chờ kết quả tiếp theo`);
                     return;
                 }
