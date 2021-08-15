@@ -382,21 +382,17 @@ async function isReOrder(statistics) {
         console.log("Kết quả : " + element.tradding_data);
     });
     if (statistics[2].tradding_data === BUY && statistics[1].tradding_data === BUY) {
-        bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `X X TIẾP TỤC ĐÁNH`);
         return true;
     }
     if (statistics[2].tradding_data === SELL && statistics[1].tradding_data === SELL) {
-        bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `D D TIẾP TỤC ĐÁNH`);
         return true;
     }
 
     if (statistics[2].tradding_data === BUY && statistics[1].tradding_data === SELL && statistics[0].tradding_data === BUY) {
-        bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `X D X TIẾP TỤC ĐÁNH`);
         return true;
     }
 
     if (statistics[2].tradding_data === SELL && statistics[1].tradding_data === BUY && statistics[0].tradding_data === SELL) {
-        bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `D X D TIẾP TỤC ĐÁNH`);
         return true;
     }
     return false;
