@@ -28,7 +28,6 @@ const MINUTE_LONGTIMEMILIS = 60 * 1000;
 const TELEGRAM_GROUP_ID = -1001492649224; // kênh tín hiệu 1
 //const TELEGRAM_GROUP_ID = -1001546623891; // sau này sẽ quản lý ở db // k push
 var isSentMessage = false;
-const TAKE_PROFIT = 120;
 initSessionVolatility(botId);
 var isFirst = true;
 const job = new cron.CronJob({
@@ -45,10 +44,6 @@ const job = new cron.CronJob({
         }
         isSentMessage = false;
         var dBbot = await getBotInfo(botId);
-        if (dBbot.is_running === DISABLE_STATUS) {
-            console.log("Bot đủ target -> Dừng");
-            return;
-        }
         var orderPrice = 1;
         lastStatistics = await getLastStatistics(botId);
         if (!lastStatistics) {
@@ -149,11 +144,6 @@ const job = new cron.CronJob({
                 updateBugget(botId, budget);
                 insertToStatistics(botId, WIN, isQuickOrder, parseInt(result.result));
                 updateVolatiltyOfBot(botId, 0);
-                // Chốt lãi
-                if (budget >= TAKE_PROFIT) {
-                    bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `${BOT_NAME} đã đạt target. Quý khách hãy chuyển sang bot bắn tín hiệu 1.2 để lấy tín hiệu`);
-                    stopOrStartBot(botId, DISABLE_STATUS);
-                }
             } else { // THUA
                 var interest = -1 * orderPrice;
                 budget = roundNumber(budget + interest, 2);
