@@ -3,13 +3,14 @@ const bot = require('./telegram-module');
 //const bot = require('../telegram-test2'); // k push
 const database = require('../database-module');
 var moment = require('moment');
+const e = require('express');
 
 // var message = "\u{1F600} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n \u{1F359} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n \u{2B06} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n \u{2B07} Cho bot gửi thử ký tự đặc biệt và xuống dòng \n"
 // message += "\u{1F55D} Đồng hồ, \u{2B06}  Tăng , \u{2B07} Giảm ,\u{1F389} Thắng , \u{274C} Thua , \u{267B} Thống kê, \u{1F4B0} Tiền";
 //bot.telegram.sendMessage(-516496456, message);
 // Link unicode của icon telegram : https://apps.timwhitlock.info/emoji/tables/unicode
 
-const botId = 3;
+const botId = 4;
 const BOT_NAME = "Bot tín hiệu 1.2";
 const RUNNING_STATUS = 1;
 const STOPPING_STATUS = 0;
@@ -24,8 +25,7 @@ const QUICK_ORDER = 1;
 const BUY = 0;
 const SELL = 1;
 const STOP_LOSS_VALUE = -7;
-const TELEGRAM_CHANNEL_ID = -1001595893591; // kênh tín hiệu 2
-//const TELEGRAM_CHANNEL_ID = -1001546623891; // group test
+const TELEGRAM_CHANNEL_ID = -1001546623891; // group test
 var isSentMessage = false;
 var orderPrice = 1;
 initSessionVolatility(botId);
@@ -38,23 +38,24 @@ const job = new cron.CronJob({
         let groupIds= await getGroupTelegramByBot(botId);
         if (!result) {
             if (!isSentMessage) {
-                console.log('BOT tạm ngưng do không lấy được dữ liệu');
                 sendToTelegram(groupIds, `BOT tạm ngưng do không lấy được dữ liệu`);
+                console.log('BOT tạm ngưng do không lấy được dữ liệu');
+                //bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, `BOT tạm ngưng do không lấy được dữ liệu`);
                 isSentMessage = true;
             }
             return;
         }
         isSentMessage = false;
         var dBbot = await getBotInfo(botId);
-        
+
         lastStatistics = await getLastStatistics(botId);
         if (!lastStatistics) {
             insertToStatistics(botId, NOT_ORDER, 0, 0);
             return;
         }
         // lệnh gấp
-        
-        
+
+
         let currentTimeSecond = new Date().getSeconds();
         if (!isFirst && currentTimeSecond === 20 && isQuickOrder === QUICK_ORDER) {
             orderPrice = orderPrice * 2;
@@ -71,13 +72,17 @@ const job = new cron.CronJob({
                 console.log("Lệnh thường -> Chờ kết quả hàng thứ ba -> Không làm gì cả");
                 return;
             }
+            
+            
             if (isQuickOrder === NON_QUICK_ORDER) { // lệnh thường -> đánh theo hàng 1
                 if (lastStatistics.tradding_data === BUY) {
                     console.log(lastStatistics);
                     sendToTelegram(groupIds, `Hãy đánh ${orderPrice}$ lệnh Mua \u{2B06}`);
+                    // bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, `Hãy đánh ${orderPrice}$ lệnh Mua \u{2B06}`);
                     insertOrder(BUY, orderPrice, isQuickOrder, botId);
                 } else {
                     sendToTelegram(groupIds, `Hãy đánh ${orderPrice}$ lệnh Bán \u{2B07}`);
+                    //bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, `Hãy đánh ${orderPrice}$ lệnh Bán \u{2B07}`);
                     insertOrder(SELL, orderPrice, isQuickOrder, botId);
                 }
             } else if (isQuickOrder === QUICK_ORDER) { // Lệnh gấp-> đánh theo lệnh vừa thua
@@ -129,7 +134,7 @@ const job = new cron.CronJob({
                 } else {
                     insertToStatistics(botId, WIN, NON_QUICK_ORDER, parseInt(result.result));
                 }
-                
+
                 updateVolatiltyOfBot(botId, 0);
                 orderPrice = 1;
                 isQuickOrder = NON_QUICK_ORDER;
