@@ -24,7 +24,6 @@ const QUICK_ORDER = 1;
 const BUY = 0;
 const SELL = 1;
 const STOP_LOSS_VALUE = -7;
-const MINUTE_LONGTIMEMILIS = 60 * 1000;
 //const TELEGRAM_GROUP_ID = -1001596882485; // kênh tín hiệu 1.2
 const TELEGRAM_GROUP_ID = -1001546623891; // sau này sẽ quản lý ở db // khong push 
 var isSentMessage = false;
@@ -124,7 +123,12 @@ const job = new cron.CronJob({
                 var percentInterest = interest / capital * 100;
                 bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `Kết quả lượt vừa rồi : Thắng \u{1F389} \n\u{1F4B0}Số dư: ${budget}$ \n\u{1F4B0}Lãi : + ${interest}$ (+${percentInterest}%)\n\u{1F4B0}Vốn: ${capital}$`);
                 updateBugget(botId, budget);
-                insertToStatistics(botId, WIN, isQuickOrder, parseInt(result.result));
+                if (isQuickOrder === QUICK_ORDER && orderPrice === 4) {
+                    insertToStatistics(botId, WIN, QUICK_ORDER, parseInt(result.result));
+                } else {
+                    insertToStatistics(botId, WIN, NON_QUICK_ORDER, parseInt(result.result));
+                }
+                
                 updateVolatiltyOfBot(botId, 0);
                 orderPrice = 1;
                 isQuickOrder = NON_QUICK_ORDER;
@@ -135,7 +139,11 @@ const job = new cron.CronJob({
                 var percentInterest = interest / capital * 100;
                 bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `Kết quả lượt vừa rồi : Thua \u{274C} \n\u{1F4B0}Số dư: ${budget}$ \n\u{1F4B0}Lãi : ${interest}$ (${percentInterest}%)\n\u{1F4B0}Vốn: ${capital}$`);
                 updateBugget(botId, budget);
-                insertToStatistics(botId, LOSE, isQuickOrder, parseInt(result.result));
+                if (isQuickOrder === QUICK_ORDER && orderPrice === 4) {
+                    insertToStatistics(botId, WIN, QUICK_ORDER, parseInt(result.result));
+                } else {
+                    insertToStatistics(botId, WIN, NON_QUICK_ORDER, parseInt(result.result));
+                }
                 let volatility = dBbot.session_volatility + interest;
                 console.log("volatility " + volatility);
                 isQuickOrder = QUICK_ORDER;

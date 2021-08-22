@@ -1,7 +1,7 @@
 const { Telegraf } = require('telegraf');
 
 // const bot = new Telegraf('1740325065:AAEixtBO5zu__F5S44iiG-tkP-DuBoTUpiY'); tradding-bot-2
-const bot = new Telegraf('1948054009:AAHbTgTxIRYaLnfjq4olX5vxEpzgOjnwX7U'); // tradding-bot
+const bot = new Telegraf('1948054009:AAHSG4Zthr8dpDr6xwBD6Shca1Ej6S1A-kI'); // tradding-bot
 bot.command('start', ctx => {
     console.log(ctx.from)
     bot.telegram.sendMessage(ctx.chat.id, 'hello there! Welcome to my new telegram bot.', {})
