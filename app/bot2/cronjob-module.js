@@ -24,8 +24,8 @@ const QUICK_ORDER = 1;
 const BUY = 0;
 const SELL = 1;
 const STOP_LOSS_VALUE = -7;
-//const TELEGRAM_GROUP_ID = -1001596882485; // kênh tín hiệu 1.2
-const TELEGRAM_GROUP_ID = -1001546623891; // sau này sẽ quản lý ở db // khong push 
+const TELEGRAM_CHANNEL_ID = -1001595893591; // kênh tín hiệu 2
+//const TELEGRAM_CHANNEL_ID = -1001546623891; // group test
 var isSentMessage = false;
 var orderPrice = 1;
 initSessionVolatility(botId);
@@ -38,7 +38,7 @@ const job = new cron.CronJob({
         if (!result) {
             if (!isSentMessage) {
                 console.log('BOT tạm ngưng do không lấy được dữ liệu');
-                bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `BOT tạm ngưng do không lấy được dữ liệu`);
+                bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, `BOT tạm ngưng do không lấy được dữ liệu`);
                 isSentMessage = true;
             }
             return;
@@ -73,19 +73,19 @@ const job = new cron.CronJob({
             if (isQuickOrder === NON_QUICK_ORDER) { // lệnh thường -> đánh theo hàng 1
                 if (lastStatistics.tradding_data === BUY) {
                     console.log(lastStatistics);
-                    bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `Hãy đánh ${orderPrice}$ lệnh Mua \u{2B06}`);
+                    bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, `Hãy đánh ${orderPrice}$ lệnh Mua \u{2B06}`);
                     insertOrder(BUY, orderPrice, isQuickOrder, botId);
                 } else {
-                    bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `Hãy đánh ${orderPrice}$ lệnh Bán \u{2B07}`);
+                    bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, `Hãy đánh ${orderPrice}$ lệnh Bán \u{2B07}`);
                     insertOrder(SELL, orderPrice, isQuickOrder, botId);
                 }
             } else if (isQuickOrder === QUICK_ORDER) { // Lệnh gấp-> đánh theo lệnh vừa thua
                 let lastOrder = await getLastOrder(botId);
                 if (lastOrder.orders === BUY) {
-                    bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `Hãy đánh ${orderPrice}$ lệnh Mua \u{2B06}`);
+                    bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, `Hãy đánh ${orderPrice}$ lệnh Mua \u{2B06}`);
                     insertOrder(BUY, orderPrice, isQuickOrder, botId);
                 } else {
-                    bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `Hãy đánh ${orderPrice}$ lệnh Bán \u{2B07}`);
+                    bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, `Hãy đánh ${orderPrice}$ lệnh Bán \u{2B07}`);
                     insertOrder(SELL, orderPrice, isQuickOrder, botId);
                 }
             }
@@ -93,10 +93,10 @@ const job = new cron.CronJob({
 
             for (var i = 3; i > 0; i--) {
                 await sleep(1000);
-                bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `Hãy đánh lệnh sau ${i} giây `);
+                bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, `Hãy đánh lệnh sau ${i} giây `);
             }
             await sleep(1000);
-            bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `Chờ kết quả \u{1F55D} !`);
+            bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, `Chờ kết quả \u{1F55D} !`);
         }
 
         if (currentTimeSecond === 6 || currentTimeSecond === 5 || currentTimeSecond === 7) { // Update kết quả, Thống kê
@@ -121,7 +121,7 @@ const job = new cron.CronJob({
                 var interest = orderPrice - orderPrice * 0.05;
                 budget = roundNumber(budget + interest, 2);
                 var percentInterest = interest / capital * 100;
-                bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `Kết quả lượt vừa rồi : Thắng \u{1F389} \n\u{1F4B0}Số dư: ${budget}$ \n\u{1F4B0}Lãi : + ${interest}$ (+${percentInterest}%)\n\u{1F4B0}Vốn: ${capital}$`);
+                bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, `Kết quả lượt vừa rồi : Thắng \u{1F389} \n\u{1F4B0}Số dư: ${budget}$ \n\u{1F4B0}Lãi : + ${interest}$ (+${percentInterest}%)\n\u{1F4B0}Vốn: ${capital}$`);
                 updateBugget(botId, budget);
                 if (isQuickOrder === QUICK_ORDER && orderPrice === 4) {
                     insertToStatistics(botId, WIN, QUICK_ORDER, parseInt(result.result));
@@ -137,7 +137,7 @@ const job = new cron.CronJob({
                 var interest = -1 * orderPrice;
                 budget = roundNumber(budget + interest, 2);
                 var percentInterest = interest / capital * 100;
-                bot.telegram.sendMessage(TELEGRAM_GROUP_ID, `Kết quả lượt vừa rồi : Thua \u{274C} \n\u{1F4B0}Số dư: ${budget}$ \n\u{1F4B0}Lãi : ${interest}$ (${percentInterest}%)\n\u{1F4B0}Vốn: ${capital}$`);
+                bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, `Kết quả lượt vừa rồi : Thua \u{274C} \n\u{1F4B0}Số dư: ${budget}$ \n\u{1F4B0}Lãi : ${interest}$ (${percentInterest}%)\n\u{1F4B0}Vốn: ${capital}$`);
                 updateBugget(botId, budget);
                 if (isQuickOrder === QUICK_ORDER && orderPrice === 4) {
                     insertToStatistics(botId, WIN, QUICK_ORDER, parseInt(result.result));
@@ -217,7 +217,7 @@ const job = new cron.CronJob({
                 statisticsMsg.push(`Tổng số lệnh THẮNG (từ 00:00) là: ${winOrderDay}\n`);
                 statisticsMsg.push(`Tổng số lệnh thắng gấp (từ 00: 00) là : ${quickWinOrderDay} \n`);
                 statisticsMsg.push(`Tổng số lệnh thua gấp (từ 00: 00) là ${quickLostOrderDay}`);
-                bot.telegram.sendMessage(TELEGRAM_GROUP_ID, statisticsMsg.join(' '));
+                bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, statisticsMsg.join(' '));
                 console.log(statisticsMsg.join(' '));
                 updateStatusForStatistics(botId);
             }
