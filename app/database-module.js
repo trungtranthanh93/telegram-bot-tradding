@@ -7,7 +7,6 @@ var connection = mysql.createConnection({
     host: '127.0.0.1',
     user: 'root',
     password: 'aA123456789^Aa@',
-    ///password: '',
     database: 'tradding_db'
 });
 
@@ -266,6 +265,18 @@ module.exports.initBot = function() {
             if (err) throw err;
             resolve(result);
             console.log("Đã cập nhật");
+        });
+    });
+}
+
+module.exports.getGroupTelegramByBot = function(botId) {
+    return new Promise((resolve, reject) => {
+        connection.query(`select tg.group_id from users_group_bot ugb
+        join telegram_group tg on tg.id = ugb.group_id 
+        where ugb.bot_id = ${botId} and ugb.del_flg = 0
+        group by tg.group_id`, function(err, result, fields) {
+            if (err) reject(err);
+            resolve(result);
         });
     });
 }

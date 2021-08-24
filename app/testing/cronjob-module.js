@@ -54,8 +54,6 @@ const job = new cron.CronJob({
             return;
         }
         // lệnh gấp
-
-
         let currentTimeSecond = new Date().getSeconds();
         if (!isFirst && currentTimeSecond === 20 && isQuickOrder === QUICK_ORDER) {
             orderPrice = orderPrice * 2;
@@ -382,7 +380,6 @@ async function getGroupTelegramByBot(botId) {
 }
 
 async function sendToTelegram(groupIds, message) {
-    await sleep(200);
     bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, message);
     let i = 0;
     groupIds.forEach(e => {

@@ -405,7 +405,6 @@ async function getGroupTelegramByBot(botId) {
 }
 
 async function sendToTelegram(groupIds, message) {
-    await sleep(200);
     bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, message);
     let i = 0;
     groupIds.forEach(e => {
