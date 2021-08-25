@@ -38,7 +38,6 @@ const job = new cron.CronJob({
         let groupIds= await getGroupTelegramByBot(botId);
         if (!result) {
             if (!isSentMessage) {
-                console.log('BOT tạm ngưng do không lấy được dữ liệu');
                 sendToTelegram(groupIds, `BOT tạm ngưng do không lấy được dữ liệu`);
                 isSentMessage = true;
             }
@@ -62,18 +61,15 @@ const job = new cron.CronJob({
         isFirst = false;
         if (currentTimeSecond === 20 || currentTimeSecond === 21 || currentTimeSecond === 19) { // Vào lệnh
             if (dBbot.is_running === STOPPING_STATUS) {
-                console.log("Bot đang dừng, không đánh");
                 return;
             }
             if (isQuickOrder === QUICK_ORDER) {
-                console.log("lệnh gấp -> Vào luôn k chờ");
             } else if (checkRowOneForOrder()) {
                 console.log("Lệnh thường -> Chờ kết quả hàng thứ ba -> Không làm gì cả");
                 return;
             }
             if (isQuickOrder === NON_QUICK_ORDER) { // lệnh thường -> đánh theo hàng 1
                 if (lastStatistics.tradding_data === BUY) {
-                    console.log(lastStatistics);
                     sendToTelegram(groupIds, `Hãy đánh ${orderPrice}$ lệnh Mua \u{2B06}`);
                     insertOrder(BUY, orderPrice, isQuickOrder, botId);
                 } else {
@@ -103,7 +99,6 @@ const job = new cron.CronJob({
         if (currentTimeSecond === 6 || currentTimeSecond === 5 || currentTimeSecond === 7) { // Update kết quả, Thống kê
             var budget = dBbot.budget;
             if (checkRowOneForStatistic() && isQuickOrder === NON_QUICK_ORDER) {
-                console.log("Kết quả của hàng thứ nhất lệnh thường. -> Chỉ lưu , k đánh lệnh.");
                 insertToStatistics(botId, NOT_ORDER, 0, parseInt(result.result));
                 return;
             }
@@ -141,15 +136,13 @@ const job = new cron.CronJob({
                 sendToTelegram(groupIds, `Kết quả lượt vừa rồi : Thua \u{274C} \n\u{1F4B0}Số dư: ${budget}$ \n\u{1F4B0}Lãi : ${interest}$ (${percentInterest}%)\n\u{1F4B0}Vốn: ${capital}$`);
                 updateBugget(botId, budget);
                 if (isQuickOrder === QUICK_ORDER && orderPrice === 4) {
-                    insertToStatistics(botId, WIN, QUICK_ORDER, parseInt(result.result));
+                    insertToStatistics(botId, LOSE, QUICK_ORDER, parseInt(result.result));
                 } else {
-                    insertToStatistics(botId, WIN, NON_QUICK_ORDER, parseInt(result.result));
+                    insertToStatistics(botId, LOSE, NON_QUICK_ORDER, parseInt(result.result));
                 }
                 let volatility = dBbot.session_volatility + interest;
-                console.log("volatility " + volatility);
                 isQuickOrder = QUICK_ORDER;
                 if (volatility <= STOP_LOSS_VALUE && dBbot.is_running === RUNNING_STATUS) {
-                    console.log("Quay về lệnh 1 đô");
                     orderPrice = 1;
                     isQuickOrder = NON_QUICK_ORDER;
                     return;
@@ -175,7 +168,6 @@ const job = new cron.CronJob({
                 let quickWinOrderDay = 0;
                 let quickLostOrderDay = 0;
                 statisc.forEach(e => {
-                    console.log(e);
                     if (e.result === WIN) {
                         if (index <= STATISTIC_TIME_AFTER && e.is_statistics === 0) {
                             statisticalsTimeAfterStr.push(`${index}. \u{1F389} (${formatDateFromISO(e.created_time)}) Thắng \n`);
@@ -219,7 +211,6 @@ const job = new cron.CronJob({
                 statisticsMsg.push(`Tổng số lệnh thắng gấp (từ 00: 00) là : ${quickWinOrderDay} \n`);
                 statisticsMsg.push(`Tổng số lệnh thua gấp (từ 00: 00) là ${quickLostOrderDay}`);
                 sendToTelegram(groupIds, statisticsMsg.join(' '));
-                console.log(statisticsMsg.join(' '));
                 updateStatusForStatistics(botId);
             }
         }

@@ -68,17 +68,14 @@ const job = new cron.CronJob({
             if (isQuickOrder === QUICK_ORDER) {
                 console.log("lệnh gấp -> Vào luôn k chờ");
             } else if (checkRowOneForOrder()) {
-                console.log("Lệnh thường -> Chờ kết quả hàng thứ nhất -> Không làm gì cả");
                 return;
             }
             if (isQuickOrder === NON_QUICK_ORDER) { // lệnh thường -> đánh theo hàng 1
                 if (lastStatistics.tradding_data === BUY) {
-                    console.log("Lệnh thường");
                     console.log(lastStatistics);
                     sendToTelegram(groupIds, `Hãy đánh ${orderPrice}$ lệnh Mua \u{2B06}`);
                     insertOrder(BUY, orderPrice, isQuickOrder, botId);
                 } else {
-                    console.log("Lệnh gấp");
                     sendToTelegram(groupIds, `Hãy đánh ${orderPrice}$ lệnh Bán \u{2B07}`);
                     insertOrder(SELL, orderPrice, isQuickOrder, botId);
                 }
@@ -127,7 +124,6 @@ const job = new cron.CronJob({
                 return;
             }
             if (dBbot.is_running === STOPPING_STATUS) {
-                console.log("Bot đang dừng -> Chỉ thống kê lệnh, không đánh");
                 insertToStatistics(botId, NOT_ORDER, 0, parseInt(result.result));
                 return;
             }
@@ -153,9 +149,7 @@ const job = new cron.CronJob({
                 updateBugget(botId, budget);
                 insertToStatistics(botId, LOSE, isQuickOrder, parseInt(result.result));
                 let volatility = dBbot.session_volatility + interest;
-                console.log("volatility " + volatility);
                 if (volatility <= STOP_LOSS_VALUE && dBbot.is_running === RUNNING_STATUS) {
-                    console.log("Dừng bot");
                     await stopOrStartBot(botId, STOPPING_STATUS);
                     sendToTelegram(groupIds, `Tạm dừng, chờ kết quả tiếp theo`);
                     return;
@@ -181,7 +175,6 @@ const job = new cron.CronJob({
                 let quickWinOrderDay = 0;
                 let quickLostOrderDay = 0;
                 statisc.forEach(e => {
-                    console.log(e);
                     if (e.result === WIN) {
                         if (index <= STATISTIC_TIME_AFTER && e.is_statistics === 0) {
                             statisticalsTimeAfterStr.push(`${index}. \u{1F389} (${formatDateFromISO(e.created_time)}) Thắng \n`);
@@ -225,7 +218,6 @@ const job = new cron.CronJob({
                 statisticsMsg.push(`Tổng số lệnh thắng gấp (từ 00: 00) là : ${quickWinOrderDay} \n`);
                 statisticsMsg.push(`Tổng số lệnh thua gấp (từ 00: 00) là ${quickLostOrderDay}`);
                 sendToTelegram(groupIds, statisticsMsg.join(' '));
-                console.log(statisticsMsg.join(' '));
                 updateStatusForStatistics(botId);
             }
         }
