@@ -72,7 +72,7 @@ const job = new cron.CronJob({
                 if (lastStatistics.tradding_data === BUY) {
                     sendToTelegram(groupIds, `Hãy đánh ${orderPrice}$ lệnh Mua \u{2B06}`);
                     insertOrder(BUY, orderPrice, isQuickOrder, botId);
-                } else {
+                } else if (lastOrder.orders === SELL) {
                     sendToTelegram(groupIds, `Hãy đánh ${orderPrice}$ lệnh Bán \u{2B07}`);
                     insertOrder(SELL, orderPrice, isQuickOrder, botId);
                 }
@@ -81,7 +81,7 @@ const job = new cron.CronJob({
                 if (lastOrder.orders === BUY) {
                     sendToTelegram(groupIds, `Hãy đánh ${orderPrice}$ lệnh Mua \u{2B06}`);
                     insertOrder(BUY, orderPrice, isQuickOrder, botId);
-                } else {
+                } else if (lastOrder.orders === SELL) {
                     sendToTelegram(groupIds, `Hãy đánh ${orderPrice}$ lệnh Bán \u{2B07}`);
                     insertOrder(SELL, orderPrice, isQuickOrder, botId);
                 }
