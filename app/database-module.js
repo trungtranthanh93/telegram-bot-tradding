@@ -34,6 +34,15 @@ module.exports.getLastResult = function() {
         });
     });
 }
+// Lấy 3 kết quả gần nhất
+module.exports.getLastThreeDataTradding = function() {
+    return new Promise((resolve, reject) => {
+        connection.query("select * from tradding_data order by id desc limit 3", function(err, result, fields) {
+            if (err) reject(err);
+            resolve(result);
+        });
+    });
+}
 
 // Lấy số dư hiện tại
 module.exports.getBotInfo = function(botId) {
@@ -59,10 +68,9 @@ module.exports.updateBugget = function(botId, budget) {
         });
     }
     // ghi kết quả lệnh vừa rồi
-module.exports.insertToStatistics = function(botId, result, isQuickOrder, traddingData) {
+module.exports.insertToStatistics = function(botId, result, isQuickOrder, traddingData, interest) {
     return new Promise((resolve, reject) => {
-        console.log(`INSERT INTO statistics (result, bot_id, created_time, is_quick_order) VALUES ('${result}', ${botId}, NOW(), ${isQuickOrder})`);
-        var sql = `INSERT INTO statistics (result, bot_id, created_time, is_quick_order, tradding_data) VALUES ('${result}', ${botId}, NOW(), ${isQuickOrder}, ${traddingData})`;
+        var sql = `INSERT INTO statistics (result, bot_id, created_time, is_quick_order, tradding_data, interest) VALUES ('${result}', ${botId}, NOW(), ${isQuickOrder}, ${traddingData}, ${interest})`;
         connection.query(sql, function(err, result) {
             if (err) throw err;
             console.log("1 record inserted");
@@ -126,7 +134,7 @@ module.exports.updateStatusForStatistics = function(botId) {
 
 module.exports.insertOrder = function(order, price, isQuickOrder, botId) {
     return new Promise((resolve, reject) => {
-        console.log(`insert into orders(orders, price, is_quick_order, created_time, bot_id) values (${order}, ${price}, ${isQuickOrder}, NOW(), ${botId});`);
+        //console.log(`insert into orders(orders, price, is_quick_order, created_time, bot_id) values (${order}, ${price}, ${isQuickOrder}, NOW(), ${botId});`);
         connection.query(`insert into orders(orders, price, is_quick_order, created_time, bot_id) values (${order}, ${price}, ${isQuickOrder}, NOW(), ${botId})`, function(err, result, fields) {
             if (err) throw err;
             console.log("INSERT ORDER!");
@@ -140,7 +148,8 @@ module.exports.getOrder = function(botId) {
         connection.query(`select * from orders where bot_id=${botId} order by id desc limit 1`, function(err, result, fields) {
             if (err) reject(err);
             if (result.length === 0) {
-                reject(new Error("getOrder"));
+                insertOrder(0, 0, 0, botId);
+                resolve(null);
             }
             resolve(result[0]);
         });

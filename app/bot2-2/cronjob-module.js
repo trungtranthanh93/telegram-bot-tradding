@@ -9,7 +9,7 @@ var moment = require('moment');
 //bot.telegram.sendMessage(-516496456, message);
 // Link unicode của icon telegram : https://apps.timwhitlock.info/emoji/tables/unicode
 
-const botId = 3;
+const botId = 6;
 const BOT_NAME = "Bot tín hiệu 2.2";
 const RUNNING_STATUS = 1;
 const STOPPING_STATUS = 0;
@@ -24,7 +24,7 @@ const QUICK_ORDER = 1;
 const BUY = 0;
 const SELL = 1;
 const STOP_LOSS_VALUE = -7;
-const TELEGRAM_CHANNEL_ID = -1001546623891; // kênh tín hiệu 2
+const TELEGRAM_CHANNEL_ID = -1001479979782; // kênh tín hiệu 2
 var isSentMessage = false;
 var orderPrice = 1;
 initSessionVolatility(botId);

@@ -8,7 +8,7 @@ var moment = require('moment');
 //bot.telegram.sendMessage(-516496456, message);
 // Link unicode của icon telegram : https://apps.timwhitlock.info/emoji/tables/unicode
 
-const botId = 4;
+const botId = 5;
 const BOT_NAME = "Bot tín hiệu 3";
 const RUNNING_STATUS = 1;
 const STOPPING_STATUS = 0;
@@ -46,7 +46,7 @@ const job = new cron.CronJob({
         var orderPrice = 1;
         lastStatistics = await getLastStatistics(botId);
         if (!lastStatistics) {
-            insertToStatistics(botId, NOT_ORDER, 0, 0);
+            insertToStatistics(botId, NOT_ORDER, 0, 0, 0);
             return;
         }
         // lệnh gấp
@@ -63,15 +63,15 @@ const job = new cron.CronJob({
                 return;
             }
             let orderCondition = await getOrderCondition(results);
-
+            
             if (isQuickOrder === QUICK_ORDER) {
                 console.log("lệnh gấp -> Vào luôn k chờ");
             } else if (!checkRowOneForOrder()) {
                 console.log("Lệnh thường -> Chờ kết quả hàng thứ ba -> Không làm gì cả");
                 return;
             }
+            
             if (isQuickOrder === NON_QUICK_ORDER) { // lệnh thường -> đánh theo 3 bóng 
-                console.log("thường");
                 if (orderCondition.result === BUY) {
                     sendToTelegram(groupIds, `Hãy đánh ${orderPrice}$ lệnh Mua \u{2B06}`);
                     insertOrder(BUY, orderPrice, isQuickOrder, botId);
@@ -81,18 +81,15 @@ const job = new cron.CronJob({
                 }
             } else if (isQuickOrder === QUICK_ORDER) { // Lệnh gấp đánh theo lệnh cũ
                 let lastOrder = await getLastOrder(botId);
-                console.log("gấp");
-                console.log(lastOrder);
                 if (lastOrder.orders === BUY) {
                     sendToTelegram(groupIds, `Hãy đánh ${orderPrice}$ lệnh Mua \u{2B06}`);
                     insertOrder(BUY, orderPrice, isQuickOrder, botId);
-                } else if (orderCondition.result === SELL) {
+                } else if (lastOrder.orders === SELL) {
                     sendToTelegram(groupIds, `Hãy đánh ${orderPrice}$ lệnh Bán \u{2B07}`);
                     insertOrder(SELL, orderPrice, isQuickOrder, botId);
                 }
                 // Lưu cho lần tiếp
                 isSame = orderCondition.isSame;
-                console.log("IS SAMEMI lần này: " + isSame);
             }
 
 
@@ -107,12 +104,12 @@ const job = new cron.CronJob({
         if (currentTimeSecond === 6 || currentTimeSecond === 5 || currentTimeSecond === 7) { // Update kết quả, Thống kê
             var budget = dBbot.budget;
             if (!checkRowOneForStatistic() && isQuickOrder === NON_QUICK_ORDER) {
-                insertToStatistics(botId, NOT_ORDER, 0, parseInt(results[0].result));
+                insertToStatistics(botId, NOT_ORDER, 0, parseInt(result.result), 0);
                 return;
             }
             if (dBbot.is_running === STOPPING_STATUS) {
                 console.log("Bot đang dừng -> Chỉ thống kê lệnh, không đánh");
-                insertToStatistics(botId, NOT_ORDER, 0, parseInt(results[0].result));
+                insertToStatistics(botId, NOT_ORDER, 0, parseInt(result.result), 0);
                 return;
             }
 
@@ -127,7 +124,7 @@ const job = new cron.CronJob({
                 var percentInterest = interest / capital * 100;
                 sendToTelegram(groupIds, `Kết quả lượt vừa rồi : Thắng \u{1F389} \n\u{1F4B0}Số dư: ${budget}$ \n\u{1F4B0}Lãi : + ${interest}$ (+${percentInterest}%)\n\u{1F4B0}Vốn: ${capital}$`);
                 updateBugget(botId, budget);
-                insertToStatistics(botId, WIN, isQuickOrder, parseInt(results[0].result));
+                insertToStatistics(botId, WIN, isQuickOrder, parseInt(results[0].result), percentInterest);
                 updateVolatiltyOfBot(botId, 0);
                 isQuickForNext = false;
             } else { // THUA
@@ -136,7 +133,7 @@ const job = new cron.CronJob({
                 var percentInterest = interest / capital * 100;
                 sendToTelegram(groupIds, `Kết quả lượt vừa rồi : Thua \u{274C} \n\u{1F4B0}Số dư: ${budget}$ \n\u{1F4B0}Lãi : ${interest}$ (${percentInterest}%)\n\u{1F4B0}Vốn: ${capital}$`);
                 updateBugget(botId, budget);
-                insertToStatistics(botId, LOSE, isQuickOrder, parseInt(results[0].result));
+                insertToStatistics(botId, LOSE, isQuickOrder, parseInt(results[0].result), percentInterest);
                 let volatility = dBbot.session_volatility + interest;
                 isQuickForNext = true;
                 updateVolatiltyOfBot(botId, volatility);
@@ -166,10 +163,9 @@ const job = new cron.CronJob({
                 let quickWinOrderDay = 0;
                 let quickLostOrderDay = 0;
                 statisc.forEach(e => {
-                    console.log(e);
                     if (e.result === WIN) {
                         if (index <= STATISTIC_TIME_AFTER && e.is_statistics === 0) {
-                            statisticalsTimeAfterStr.push(`${index}. \u{1F389} (${formatDateFromISO(e.created_time)}) Thắng \n`);
+                            statisticalsTimeAfterStr.push(`${index}. \u{1F389} (${formatDateFromISO(e.created_time)}) Thắng +${e.interest} % \n`);
                             if (e.is_quick_order === NON_QUICK_ORDER) {
                                 winOrder++;
                             } else {
@@ -185,7 +181,7 @@ const job = new cron.CronJob({
                         }
                     } else {
                         if (index <= STATISTIC_TIME_AFTER && e.is_statistics === 0) {
-                            statisticalsTimeAfterStr.push(`${index}. \u{274C} (${formatDateFromISO(e.created_time)}) Thua \n`);
+                            statisticalsTimeAfterStr.push(`${index}. \u{274C} (${formatDateFromISO(e.created_time)}) Thua ${e.interest} % \n`);
                             if (e.is_quick_order === NON_QUICK_ORDER) {
                                 lostOrder++;
                             } else {
@@ -210,7 +206,6 @@ const job = new cron.CronJob({
                 statisticsMsg.push(`Tổng số lệnh thắng gấp (từ 00: 00) là : ${quickWinOrderDay} \n`);
                 statisticsMsg.push(`Tổng số lệnh thua gấp (từ 00: 00) là ${quickLostOrderDay}`);
                 sendToTelegram(groupIds, statisticsMsg.join(' '));
-                console.log(statisticsMsg.join(' '));
                 updateStatusForStatistics(botId);
             }
         }
@@ -236,8 +231,8 @@ async function updateBugget(botid, bugdet) {
     return await database.updateBugget(botid, bugdet);
 }
 
-async function insertToStatistics(botid, result, isQuickOrder, traddingData) {
-    return await database.insertToStatistics(botid, result, isQuickOrder, traddingData);
+async function insertToStatistics(botid, result, isQuickOrder, traddingData, interest) {
+    return await database.insertToStatistics(botid, result, isQuickOrder, traddingData, interest);
 }
 
 async function getLastStatistics(botid) {
@@ -270,29 +265,23 @@ async function statisticDay(botid, timeAfter) {
 }
 
 function formatDateFromISO(date) {
-    return moment(date.toString()).format("YYYY-MM-DD hh:mm:ss");
+    return moment(date.toString()).format("hh:mm:ss");
 }
 
 // kiểm tra kết quả có phải ở hàng 1 hay là không, (hàng 1 số phút khi tạo sẽ lẻ)
 function checkRowOneForStatistic() {
     var createdMinute = new Date().getMinutes();
-    console.log("MINUTE " + createdMinute);
     if (createdMinute % 2 === 0) {
-        console.log("Hàng 3");
         return false;
     }
-    console.log("Hàng 1");
     return true;
 }
 
 function checkRowOneForOrder() {
     var createdMinute = new Date().getMinutes();
-    console.log("MINUTE " + createdMinute);
     if (createdMinute % 2 === 0) {
-        console.log("Hàng 1");
         return true;
     }
-    console.log("Hàng 3");
     return false;
 }
 
@@ -344,14 +333,11 @@ async function getData() {
 }
 // kiểm tra 3 kết quả gần nhất từ hàng 4
 async function getOrderCondition(data) {
-    console.log(data);
     if (!data) {
         return null;
     }
     // 3 bóng cùng màu
     if (data[0].result === data[1].result && data[0].result === data[2].result) {
-        console.log("Bóng đồng màu: " + data[1].result);
-        console.log();
         if (parseInt(data[0].result) === BUY) {
             return { result: 1, isSame: true };
         } else if (parseInt(data[0].result) === SELL) {

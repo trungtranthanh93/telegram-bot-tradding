@@ -10,7 +10,7 @@ bot.command('image', (ctx) => ctx.replyWithPhoto({ url: 'https://picsum.photos/2
 // https://api.telegram.org/bot1740325065:AAEixtBO5zu__F5S44iiG-tkP-DuBoTUpiY/getUpdates
 // https://api.telegram.org/bot1740325065:AAGNCtKTLmsYpkmQOG_HlU7TuDxHIxouGgg/getUpdates
 
-bot.telegram.sendMessage(-1001506649568, "Bot re-start"); // Gửi tin nhắn 
+bot.telegram.sendMessage(-1001506649568, "Bot tiến hành khởi động lại. Nhận tín hiệu từ Bot tín hiệu 3"); // Gửi tin nhắn 
 module.exports = bot;
 
 
