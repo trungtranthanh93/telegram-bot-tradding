@@ -8,7 +8,7 @@ var moment = require('moment');
 //bot.telegram.sendMessage(-516496456, message);
 // Link unicode của icon telegram : https://apps.timwhitlock.info/emoji/tables/unicode
 
-const botId = 5;
+const botId = 7;
 const BOT_NAME = "Bot tín hiệu 3";
 const RUNNING_STATUS = 1;
 const STOPPING_STATUS = 0;
@@ -29,7 +29,7 @@ var isQuickForNext = false;
 initSessionVolatility(botId);
 var isFirst = true;
 const job = new cron.CronJob({
-    cronTime: '6,15,20 * * * * *',
+    cronTime: '6,15,26 * * * * *',
     onTick: async function () {
         let results = await getData();
         let groupIds = await getGroupTelegramByBot(botId);
@@ -57,7 +57,7 @@ const job = new cron.CronJob({
         }
         let currentTimeSecond = new Date().getSeconds();
         isFirst = false;
-        if (currentTimeSecond === 20 || currentTimeSecond === 21 || currentTimeSecond === 19) { // Vào lệnh
+        if (currentTimeSecond === 26 || currentTimeSecond === 25 || currentTimeSecond === 27) { // Vào lệnh
             if (dBbot.is_running === STOPPING_STATUS) {
                 console.log("Bot đang dừng, không đánh");
                 return;
@@ -101,15 +101,15 @@ const job = new cron.CronJob({
             sendToTelegram(groupIds, `Chờ kết quả \u{1F55D} !`);
         }
 
-        if (currentTimeSecond === 6 || currentTimeSecond === 5 || currentTimeSecond === 7) { // Update kết quả, Thống kê
+        if (currentTimeSecond === 15 || currentTimeSecond === 17 || currentTimeSecond === 18) { // Update kết quả, Thống kê
             var budget = dBbot.budget;
             if (!checkRowOneForStatistic() && isQuickOrder === NON_QUICK_ORDER) {
-                insertToStatistics(botId, NOT_ORDER, 0, parseInt(result.result), 0);
+                insertToStatistics(botId, NOT_ORDER, 0, parseInt(results[0].result), 0);
                 return;
             }
             if (dBbot.is_running === STOPPING_STATUS) {
                 console.log("Bot đang dừng -> Chỉ thống kê lệnh, không đánh");
-                insertToStatistics(botId, NOT_ORDER, 0, parseInt(result.result), 0);
+                insertToStatistics(botId, NOT_ORDER, 0, parseInt(results[0].result), 0);
                 return;
             }
 

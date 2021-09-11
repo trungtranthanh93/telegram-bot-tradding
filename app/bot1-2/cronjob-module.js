@@ -31,7 +31,7 @@ var isSentMessage = false;
 initSessionVolatility(botId);
 var isFirst = true;
 const job = new cron.CronJob({
-    cronTime: '6,15,20 * * * * *',
+    cronTime: '6,15,26 * * * * *',
     onTick: async function () {
         let result = await getLastDataTradding();
         let groupIds = await getGroupTelegramByBot(botId);
@@ -59,7 +59,7 @@ const job = new cron.CronJob({
         }
         let currentTimeSecond = new Date().getSeconds();
         isFirst = false;
-        if (currentTimeSecond === 20 || currentTimeSecond === 21 || currentTimeSecond === 19) { // Vào lệnh
+        if (currentTimeSecond === 26 || currentTimeSecond === 25 || currentTimeSecond === 27) { // Vào lệnh
             if (dBbot.is_running === STOPPING_STATUS) {
                 return;
             }
@@ -100,7 +100,7 @@ const job = new cron.CronJob({
             }
         }
 
-        if (currentTimeSecond === 6 || currentTimeSecond === 5 || currentTimeSecond === 7) { // Update kết quả, Thống kê
+        if (currentTimeSecond === 15 || currentTimeSecond === 17 || currentTimeSecond === 18) { // Update kết quả, Thống kê
             var budget = dBbot.budget;
             if (!checkRowOneForStatistic() && isQuickOrder === NON_QUICK_ORDER) {
                 insertToStatistics(botId, NOT_ORDER, 0, parseInt(result.result), 0);
