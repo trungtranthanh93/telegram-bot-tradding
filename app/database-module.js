@@ -6,6 +6,8 @@ const _ = require('lodash');
 var connection = mysql.createConnection({
     host: '127.0.0.1',
     user: 'root',
+    // password: '1234',
+    // database: 'tradding-db'
     password: 'aA123456789^Aa@',
     database: 'tradding_db'
 });
@@ -73,7 +75,6 @@ module.exports.insertToStatistics = function(botId, result, isQuickOrder, traddi
         var sql = `INSERT INTO statistics (result, bot_id, created_time, is_quick_order, tradding_data, interest) VALUES ('${result}', ${botId}, NOW(), ${isQuickOrder}, ${traddingData}, ${interest})`;
         connection.query(sql, function(err, result) {
             if (err) throw err;
-            console.log("1 record inserted");
             resolve(result);
         });
     });
@@ -286,6 +287,58 @@ module.exports.getGroupTelegramByBot = function(botId) {
         group by tg.group_id`, function(err, result, fields) {
             if (err) reject(err);
             resolve(result);
+        });
+    });
+}
+
+module.exports.getSettingByKey = function(key) {
+    return new Promise((resolve, reject) => {
+        connection.query(`select * from setting where config_key='${key}'`, function(err, result, fields) {
+            if (err) reject(err);
+            if (result.length === 0) {
+                resolve(null);
+            }
+            resolve(result[0]);
+        });
+    });
+}
+
+
+module.exports.updateSetting = function(key, value) {
+    console.log(`update setting set value='${value}' where config_key = '${key}'`);
+    var sql = `update setting set value='${value}' where config_key = '${key}'`;
+    connection.query(sql, function(err, result) {
+        if (err) throw err;
+        console.log("update setting");
+    });
+}
+
+
+module.exports.insertSetting = function(key, value) {
+    var sql = `INSERT INTO setting (config_key, value) VALUES ('${key}', '${value}')`;
+    connection.query(sql, function(err, result) {
+        if (err) throw err;
+        console.log("insert setting");
+    });
+}
+
+
+module.exports.stopAll = function() {
+    return new Promise((resolve, reject) => {
+        connection.query(`update bot set is_running=0, updated_at=now()`, function(err, result, fields) {
+            if (err) throw err;
+            resolve(result);
+            console.log("Đã cập nhật");
+        });
+    });
+}
+
+module.exports.startAll = function() {
+    return new Promise((resolve, reject) => {
+        connection.query(`update bot set is_running=1, updated_at=now()`, function(err, result, fields) {
+            if (err) throw err;
+            resolve(result);
+            console.log("Đã cập nhật");
         });
     });
 }

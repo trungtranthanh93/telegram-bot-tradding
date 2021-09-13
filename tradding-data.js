@@ -1,11 +1,8 @@
-// puppeteer-extra is a drop-in replacement for puppeteer,
-// it augments the installed puppeteer with plugin functionality
+
 const puppeteer = require('puppeteer-extra');
 const database = require('./app/database-module');
 const cron = require('cron');
-// add recaptcha plugin and provide it your 2captcha token (= their apiKey)
-// 2captcha is the builtin solution provider but others would work as well.
-// Please note: You need to add funds to your 2captcha account for this to work
+
 const RecaptchaPlugin = require('puppeteer-extra-plugin-recaptcha');
 const { connect, ConsoleMessage } = require('puppeteer');
 puppeteer.use(
@@ -21,26 +18,33 @@ var lastResult = null; // 0: Xanh 1: Đỏ
 var leftTime = null;
 
 // puppeteer usage as normal
-puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] }).then(async browser => {
+const BUFFER_TIMING = 2;
+const ORDER_DELAY_TIMING = 15;
+const ORDER_SETTING_TIME_KEY = "order.setting.second";
+const RESULT_SETTING_TIME_KEY = "result.setting.second";
+var isBetSession = true;
+puppeteer.launch({ headless: true, args: ['--no-sandbox'] }).then(async browser => {
     const page = await browser.newPage()
     await page.setDefaultNavigationTimeout(0);
     await page.goto('https://pocinex.net/login')
     await page.type('input[name="email"]', 'trumikoran@gmail.com', { delay: 100 })
     await page.type('input[name="password"]', 'Trung12345678', { delay: 100 })
     await page.click('#main-content > div > div > div > div.boxAuthentication.show > div > div.formWapper.w-100 > form > div.form-group.text-center > button')
-        // await page.goto('https://wefinex.net/login')
-        // await page.type('input[type="email"]', 'trumikoran@gmail.com', { delay: 100 })
-        // await page.type('input[type="password"]', '1zx2qwSa', { delay: 100 })
-        // await page.click('button[type="submit"]')
-        // That's it, a single line of code to solve reCAPTCHAs 🎉
-    await page.solveRecaptchas()
 
+    // await page.goto('https://wefinex.net/login')
+    // await page.type('input[type="email"]', 'trumikoran@gmail.com', { delay: 100 })
+    // await page.type('input[type="password"]', '1zx2qwSa', { delay: 100 })
+    // await page.click('button[type="submit"]')
+    // That's it, a single line of code to solve reCAPTCHAs 🎉
+
+
+    await page.solveRecaptchas()
     await Promise.all([
         page.waitForNavigation(),
-    ])
+    ]);
     const job = new cron.CronJob({
         cronTime: '35 0/1 * * * *',
-        onTick: async function() {
+        onTick: async function () {
             await page.reload({ waitUntil: ["networkidle0"] });
         }
     });
@@ -53,11 +57,14 @@ puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] }).then(as
     count = 0;
     let countStaticData = 0;
     let communitiesId = 1;
-    const printResponse = async function(cdp, response) {
+    const printResponse = async function (cdp, response) {
         if (!response.response) {
             return;
         }
         let data = response.response.payloadData;
+        if (data.includes("BO_PRICE")) {
+            isBetSession = JSON.parse(data.substr(2, data.length))[1].isBetSession;
+        }
         if (data.includes("SOCKET_BO_LAST_RESULT") && data.includes("finalSide")) {
             console.log(response.requestId)
             let str = response.response.payloadData;
@@ -80,7 +87,32 @@ puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] }).then(as
                     result = `Kết quả bóng vừa rồi : Hòa`
                     lastResult = 2;
                 }
-                database.inserRessult(lastResult);
+                await database.inserRessult(lastResult);
+                console.log(isBetSession);
+                if (!isBetSession) {
+                    let currentTimeSecond = new Date().getSeconds();
+                    let newResultTiming = currentTimeSecond + BUFFER_TIMING;
+                    let oldResultTiming = await database.getSettingByKey(RESULT_SETTING_TIME_KEY);
+                    if (Math.abs(parseInt(oldResultTiming.value) - newResultTiming) > 2) {
+                        if (newResultTiming > 60) {
+                            newResultTiming = newResultTiming - 60;
+                        }
+                        database.stopAll();
+                        database.updateSetting(RESULT_SETTING_TIME_KEY , newResultTiming);
+                    }
+                    
+                } else {
+                    let currentTimeSecond = new Date().getSeconds();
+                    let newOrderTiming = currentTimeSecond + ORDER_DELAY_TIMING;
+                    let oldOrderTiming = await database.getSettingByKey(ORDER_SETTING_TIME_KEY);
+                    if (Math.abs(parseInt(oldOrderTiming.value) - newOrderTiming) > 2) {
+                        if (newOrderTiming > 60) {
+                            newOrderTiming = newOrderTiming - 60;
+                        }
+                        database.stopAll();
+                        database.updateSetting(ORDER_SETTING_TIME_KEY, newOrderTiming);
+                    }
+                }
             }
         }
         if (data === "3") {
@@ -101,7 +133,7 @@ puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] }).then(as
     }
     cdp.on('Network.webSocketFrameReceived', printResponse.bind(this, cdp)); // Fired when WebSocket message is received.
     // cdp.on('Network.webSocketFrameSent', printResponse); // Fired when WebSocket message is sent.
-    cdp.on('Network.webSocketCreated', async(response) => {
+    cdp.on('Network.webSocketCreated', async (response) => {
         console.log("Vào webSocketCreated")
         console.log(response);
     })
@@ -115,4 +147,3 @@ function sleep(ms) {
 
 exports.leftTime = leftTime;
 module.exports = puppeteer;
-// startJob();
