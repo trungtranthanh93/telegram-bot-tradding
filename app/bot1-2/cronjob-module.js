@@ -47,6 +47,10 @@ async function startBot() {
             }
             isSentMessage = false;
             var dBbot = await getBotInfo(botId);
+            if (dBbot.is_active === 0) {
+                console.log("Bot dừng");
+                return;
+            }
             var orderPrice = 1;
             lastStatistics = await getLastStatistics(botId);
             if (!lastStatistics) {
@@ -301,7 +305,6 @@ function formatDateFromISO(date) {
 // kiểm tra kết quả có phải ở hàng 1 hay là không, (hàng 1 số phút khi tạo sẽ lẻ)
 function checkRowOneForStatistic() {
     var createdMinute = new Date().getMinutes();
-    console.log("MINUTE " + createdMinute);
     if (createdMinute % 2 === 0) {
         console.log("Hàng 3");
         return false;
@@ -312,7 +315,6 @@ function checkRowOneForStatistic() {
 
 function checkRowOneForOrder() {
     var createdMinute = new Date().getMinutes();
-    console.log("MINUTE " + createdMinute);
     if (createdMinute % 2 === 0) {
         console.log("Hàng 1");
         return true;

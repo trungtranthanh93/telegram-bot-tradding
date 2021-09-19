@@ -46,6 +46,10 @@ async function startBot() {
             }
             isSentMessage = false;
             var dBbot = await getBotInfo(botId);
+            if (dBbot.is_active === 0) {
+                console.log("Bot dừng");
+                return;
+            }
             var orderPrice = 1;
             lastStatistics = await getLastStatistics(botId);
             if (!lastStatistics) {
