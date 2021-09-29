@@ -2,6 +2,7 @@
 const puppeteer = require('puppeteer-extra');
 const database = require('./app/database-module');
 const cron = require('cron');
+var shell = require('shelljs');
 
 const RecaptchaPlugin = require('puppeteer-extra-plugin-recaptcha');
 const { connect, ConsoleMessage } = require('puppeteer');
@@ -16,17 +17,19 @@ puppeteer.use(
 )
 var lastResult = null; // 0: Xanh 1: Đỏ
 var leftTime = null;
-
 // puppeteer usage as normal
 const BUFFER_TIMING = 2;
 const ORDER_DELAY_TIMING = 15;
 const ORDER_SETTING_TIME_KEY = "order.setting.second";
 const RESULT_SETTING_TIME_KEY = "result.setting.second";
+
 var isBetSession = true;
 puppeteer.launch({ headless: true, args: ['--no-sandbox'] }).then(async browser => {
     const page = await browser.newPage()
     await page.setDefaultNavigationTimeout(0);
-    await page.goto('https://pocinex.net/login')
+    await page.goto('https://moonata.net/login')
+    // await page.type('input[name="email"]', 'khangnvph045132@gmail.com', { delay: 100 })
+    // await page.type('input[name="password"]', '123@123Aa', { delay: 100 })
     await page.type('input[name="email"]', 'trumikoran@gmail.com', { delay: 100 })
     await page.type('input[name="password"]', 'Trung12345678', { delay: 100 })
     await page.click('#main-content > div > div > div > div.boxAuthentication.show > div > div.formWapper.w-100 > form > div.form-group.text-center > button')
@@ -43,7 +46,7 @@ puppeteer.launch({ headless: true, args: ['--no-sandbox'] }).then(async browser 
         page.waitForNavigation(),
     ]);
     const job = new cron.CronJob({
-        cronTime: '35 0/1 * * * *',
+        cronTime: '45 0/1 * * * *',
         onTick: async function () {
             await page.reload({ waitUntil: ["networkidle0"] });
         }
@@ -88,30 +91,48 @@ puppeteer.launch({ headless: true, args: ['--no-sandbox'] }).then(async browser 
                     lastResult = 2;
                 }
                 await database.inserRessult(lastResult);
-                console.log(isBetSession);
-                if (!isBetSession) {
+                if (isBetSession) {
                     let currentTimeSecond = new Date().getSeconds();
                     let newResultTiming = currentTimeSecond + BUFFER_TIMING;
                     let oldResultTiming = await database.getSettingByKey(RESULT_SETTING_TIME_KEY);
+                    console.log(`currentTimeSecond ${currentTimeSecond}`);
+                    console.log(`newResultTiming ${newResultTiming}`);
+
                     if (Math.abs(parseInt(oldResultTiming.value) - newResultTiming) > 2) {
                         if (newResultTiming > 60) {
                             newResultTiming = newResultTiming - 60;
                         }
-                        database.stopAll();
-                        database.updateSetting(RESULT_SETTING_TIME_KEY , newResultTiming);
+                        await database.stopAll();
+                        await database.stopAllGroup();
+                        await database.updateSetting(RESULT_SETTING_TIME_KEY, newResultTiming);
+                        console.log("pm2 restart app");
+                        await sleep(1000);
+                        shell.exec('pm2 restart app', function(code, output) {
+                            console.log('Exit code:', code);
+                            console.log('Program output:', output);
+                          });                        
                     }
-                    
-                } else {
-                    let currentTimeSecond = new Date().getSeconds();
+                    //let currentTimeSecond = new Date().getSeconds();
                     let newOrderTiming = currentTimeSecond + ORDER_DELAY_TIMING;
                     let oldOrderTiming = await database.getSettingByKey(ORDER_SETTING_TIME_KEY);
+                    console.log(`currentTimeSecond ${currentTimeSecond}`);
+                    console.log(`newOrderTiming ${newOrderTiming}`);
                     if (Math.abs(parseInt(oldOrderTiming.value) - newOrderTiming) > 2) {
                         if (newOrderTiming > 60) {
                             newOrderTiming = newOrderTiming - 60;
                         }
-                        database.stopAll();
-                        database.updateSetting(ORDER_SETTING_TIME_KEY, newOrderTiming);
+                        await database.stopAll();
+                        await database.stopAllGroup();
+                        await database.updateSetting(ORDER_SETTING_TIME_KEY, newOrderTiming);
+                        await sleep(1000);
+                        shell.exec('pm2 restart app', function(code, output) {
+                            console.log('Exit code:', code);
+                            console.log('Program output:', output);
+                          });                        
                     }
+
+                } else {
+
                 }
             }
         }
