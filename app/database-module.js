@@ -325,7 +325,7 @@ module.exports.insertSetting = function(key, value) {
 
 module.exports.stopAll = function() {
     return new Promise((resolve, reject) => {
-        connection.query(`update bot set is_running=0, updated_at=now()`, function(err, result, fields) {
+        connection.query(`update bot set is_active=0, updated_at=now()`, function(err, result, fields) {
             if (err) throw err;
             resolve(result);
             console.log("Đã cập nhật");
@@ -335,7 +335,18 @@ module.exports.stopAll = function() {
 
 module.exports.startAll = function() {
     return new Promise((resolve, reject) => {
-        connection.query(`update bot set is_running=1, updated_at=now()`, function(err, result, fields) {
+        connection.query(`update bot set is_active=1, updated_at=now()`, function(err, result, fields) {
+            if (err) throw err;
+            resolve(result);
+            console.log("Đã cập nhật");
+        });
+    });
+}
+
+
+module.exports.stopAllGroup = function() {
+    return new Promise((resolve, reject) => {
+        connection.query(`update users_group_bot set del_flg=1`, function(err, result, fields) {
             if (err) throw err;
             resolve(result);
             console.log("Đã cập nhật");
