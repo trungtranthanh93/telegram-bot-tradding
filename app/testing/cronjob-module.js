@@ -112,7 +112,7 @@ async function startBot() {
                 }
             }
 
-            if (currentTimeSecond === parseInt(timeInfo.resultSecond) || currentTimeSecond === (parseInt(timeInfo.resultSecond) + 1) || currentTimeSecond === 19) { // Update kết quả, Thống kê
+            if (currentTimeSecond === parseInt(timeInfo.resultSecond) || currentTimeSecond === (parseInt(timeInfo.resultSecond) + 1) || (parseInt(timeInfo.resultSecond) + 2)) { // Update kết quả, Thống kê
                 var budget = dBbot.budget;
                 if (checkRowOneForStatistic(timeInfo.rowFirstValue) && isQuickOrder === NON_QUICK_ORDER) {
                     insertToStatistics(botId, NOT_ORDER, 0, parseInt(result.result), 0);

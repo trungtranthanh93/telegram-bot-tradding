@@ -7,11 +7,10 @@ var connection = mysql.createConnection({
     host: '127.0.0.1',
     user: 'root',
     // password: '1234',
-    // database: 'tradding-db'
+    // database: 'tradding_db'
     password: 'aA123456789^Aa@',
     database: 'tradding_db'
 });
-
 connection.connect(function(err) {
     if (err) throw err;
     console.log("Connected!");

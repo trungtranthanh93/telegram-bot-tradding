@@ -19,7 +19,7 @@ var lastResult = null; // 0: Xanh 1: Đỏ
 var leftTime = null;
 // puppeteer usage as normal
 const BUFFER_TIMING = 2;
-const ORDER_DELAY_TIMING = 15;
+const ORDER_DELAY_TIMING = 10;
 const ORDER_SETTING_TIME_KEY = "order.setting.second";
 const RESULT_SETTING_TIME_KEY = "result.setting.second";
 

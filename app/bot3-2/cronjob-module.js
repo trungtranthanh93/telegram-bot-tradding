@@ -108,7 +108,7 @@ async function startBot() {
                 sendToTelegram(groupIds, `Chờ kết quả \u{1F55D} !`);
             }
     
-            if (currentTimeSecond === parseInt(timeInfo.resultSecond) || currentTimeSecond === (parseInt(timeInfo.resultSecond) + 1) || currentTimeSecond === 19) { // Update kết quả, Thống kê
+            if (currentTimeSecond === parseInt(timeInfo.resultSecond) || currentTimeSecond === (parseInt(timeInfo.resultSecond) + 1) || (parseInt(timeInfo.resultSecond) + 2)) { // Update kết quả, Thống kê
                 var budget = dBbot.budget;
                 if (!checkRowOneForStatistic() && isQuickOrder === NON_QUICK_ORDER) {
                     insertToStatistics(botId, NOT_ORDER, 0, parseInt(results[0].result), 0);
