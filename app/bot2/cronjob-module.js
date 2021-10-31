@@ -61,7 +61,7 @@ async function startBot() {
             
             
             let currentTimeSecond = new Date().getSeconds();
-            if (!isFirst && currentTimeSecond === 20 && isQuickOrder === QUICK_ORDER) {
+            if (!isFirst && currentTimeSecond === parseInt(timeInfo.orderSecond) && isQuickOrder === QUICK_ORDER) {
                 orderPrice = orderPrice * 2;
             }
             isFirst = false;
@@ -107,7 +107,7 @@ async function startBot() {
                 }
             }
     
-            if (currentTimeSecond === parseInt(timeInfo.resultSecond) || currentTimeSecond === (parseInt(timeInfo.resultSecond) + 1) || (parseInt(timeInfo.resultSecond) + 2)) { // Update kết quả, Thống kê
+            if (currentTimeSecond === parseInt(timeInfo.resultSecond) || currentTimeSecond === (parseInt(timeInfo.resultSecond) + 1) || currentTimeSecond === (parseInt(timeInfo.resultSecond) + 2)) { // Update kết quả, Thống kê
                 var budget = dBbot.budget;
                 if (checkRowOneForStatistic() && isQuickOrder === NON_QUICK_ORDER) {
                     insertToStatistics(botId, NOT_ORDER, 0, parseInt(result.result), 0);
