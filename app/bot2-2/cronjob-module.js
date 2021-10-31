@@ -67,7 +67,7 @@ async function startBot() {
                     return;
                 }
                 if (isQuickOrder === QUICK_ORDER) {
-                } else if (!checkRowOneForOrder()) {
+                } else if (!database.checkRowOneForOrder()) {
                     console.log("Lệnh thường -> Chờ kết quả hàng thứ ba -> Không làm gì cả");
                     return;
                 }
@@ -106,7 +106,7 @@ async function startBot() {
     
             if (currentTimeSecond === parseInt(timeInfo.resultSecond) || currentTimeSecond === (parseInt(timeInfo.resultSecond) + 1) || currentTimeSecond === (parseInt(timeInfo.resultSecond) + 2)) { // Update kết quả, Thống kê
                 var budget = dBbot.budget;
-                if (!checkRowOneForStatistic() && isQuickOrder === NON_QUICK_ORDER) {
+                if (!database.checkRowOneForStatistic() && isQuickOrder === NON_QUICK_ORDER) {
                     insertToStatistics(botId, NOT_ORDER, 0, parseInt(result.result), 0);
                     return;
                 }
@@ -293,17 +293,6 @@ async function statisticDay(botid, timeAfter) {
 
 function formatDateFromISO(date) {
     return moment(date.toString()).format("hh:mm:ss");
-}
-
-// kiểm tra kết quả có phải ở hàng 1 hay là không, (hàng 1 số phút khi tạo sẽ lẻ)
-function checkRowOneForStatistic() {
-    var createdMinute = new Date().getMinutes();
-    if (createdMinute % 2 === 0) {
-        console.log("Hàng 3");
-        return false;
-    }
-    console.log("Hàng 1");
-    return true;
 }
 
 function checkRowOneForOrder() {
