@@ -242,7 +242,7 @@ function sleep(ms) {
     });
 }
 async function getLastThreeDataTradding() {
-    return await database.getLastThreeDataTradding();
+    return await database.getLastThreeDataTradding(3);
 }
 async function getBotInfo(botid) {
     return await database.getBotInfo(botid);

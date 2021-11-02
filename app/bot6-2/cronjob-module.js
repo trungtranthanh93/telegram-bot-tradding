@@ -9,12 +9,10 @@ var moment = require('moment');
 //bot.telegram.sendMessage(-516496456, message);
 // Link unicode của icon telegram : https://apps.timwhitlock.info/emoji/tables/unicode
 
+//const TELEGRAM_CHANNEL_ID = -1001546623891; // group test
 
-
-const botId = 8;
-const BOT_NAME = "Bot tín hiệu 4";
-const STOPPING_STATUS = 0;
-var isQuickOrder = 0;
+const botId = 10;
+const BOT_NAME = "Phương pháp 6.2(1 mặt đỏ)";
 const capital = 100;
 const WIN = "WIN";
 const LOSE = "LOSE";
@@ -24,7 +22,8 @@ const NON_QUICK_ORDER = 0;
 const QUICK_ORDER = 1;
 const BUY = 0;
 const SELL = 1;
-const TELEGRAM_CHANNEL_ID = -1001787581503;
+const isQuickOrder =0;
+const TELEGRAM_CHANNEL_ID = -1001755986862;
 var orderPrice = 1;
 var isStop = false;
 var stopTime = new Date().getTime();
@@ -59,7 +58,7 @@ async function startBot() {
             }
             let currentTimeSecond = new Date().getSeconds();
             if (currentTimeSecond === parseInt(timeInfo.orderSecond) || currentTimeSecond === (parseInt(timeInfo.orderSecond) + 1) || currentTimeSecond === (parseInt(timeInfo.orderSecond) + 2)) { // Vào lệnh
-                
+
                 var isNotOrder = false;
                 let lastStatistic = await getLastStatistics(botId);
                 const currrent = new Date().getTime();
@@ -68,22 +67,11 @@ async function startBot() {
                     return;
                 }
                 if (isStop) {
-                    if (lastStatistic.tradding_data === BUY) {
-                        tempOrder = BUY;
-                    } else if (lastStatistic.tradding_data === SELL) {
-                        tempOrder = SELL;
-                    }
+                    tempOrder = SELL;
                     return;
                 }
-                if (lastStatistic.tradding_data === BUY) {
-                    sendToTelegram(groupIds, `Hãy đánh ${orderPrice}$ lệnh Mua \u{2B06}`);
-                    insertOrder(BUY, orderPrice, isQuickOrder, botId);
-                } else if (lastStatistic.tradding_data === SELL) {
-                    sendToTelegram(groupIds, `Hãy đánh ${orderPrice}$ lệnh Bán \u{2B07}`);
-                    insertOrder(SELL, orderPrice, isQuickOrder, botId);
-                } else {
-                    isNotOrder = true;
-                }
+                sendToTelegram(groupIds, `Hãy đánh ${orderPrice}$ lệnh Bán \u{2B07}`);
+                insertOrder(SELL, orderPrice, isQuickOrder, botId);
                 if (!isNotOrder) {
                     for (var i = 3; i > 0; i--) {
                         await sleep(1000);
@@ -141,7 +129,6 @@ async function startBot() {
                     updateBugget(botId, budget);
                     insertToStatistics(botId, LOSE, NON_QUICK_ORDER, parseInt(result.result), percentInterest);
                     let volatility = dBbot.session_volatility + interest;
-                    isQuickOrder = QUICK_ORDER;
                     updateVolatiltyOfBot(botId, volatility);
                     if (isLose && isLoseSecondTime) {
                         isStop = true;

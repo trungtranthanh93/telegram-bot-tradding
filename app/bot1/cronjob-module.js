@@ -29,7 +29,7 @@ const MINUTE_LONGTIMEMILIS = 60 * 1000;
 const TELEGRAM_CHANNEL_ID = -1001492649224; // kênh tín hiệu 1
 var isSentMessage = false;
 initSessionVolatility(botId);
-startAll();
+//startAll();
 var isFirst = true;
 
 async function startBot() {
