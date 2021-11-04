@@ -28,6 +28,7 @@ var orderPrice = 1;
 var isStop = false;
 var stopTime = new Date().getTime();
 var isLose = false;
+var isLoseSecondTime = false;
 const MINUTE_LONGTIMEMILIS = 60 * 1000;
 var tempOrder = null;
 async function startBot() {
@@ -99,6 +100,7 @@ async function startBot() {
                             isStop = false;
                             initSessionVolatility(botId);
                             isLose = false;
+                            isLoseSecondTime = false;
                         } else {
                             console.log("Không đủ điều kiện đánh lệnh -> Đợi tiếp");
                             stopTime = new Date().getTime();
@@ -118,6 +120,7 @@ async function startBot() {
                     insertToStatistics(botId, WIN, NON_QUICK_ORDER, parseInt(result.result), percentInterest);
                     updateVolatiltyOfBot(botId, 0);
                     isLose = false;
+                    isLoseSecondTime = false;
                 } else { // THUA
                     var interest = -1 * orderPrice;
                     budget = roundNumber(budget + interest, 2);
@@ -127,11 +130,14 @@ async function startBot() {
                     insertToStatistics(botId, LOSE, NON_QUICK_ORDER, parseInt(result.result), percentInterest);
                     let volatility = dBbot.session_volatility + interest;
                     updateVolatiltyOfBot(botId, volatility);
-                    if (isLose) {
+                    if (isLose && isLoseSecondTime) {
                         isStop = true;
                         await sleep(2000);
                         sendToTelegram(groupIds, `Tạm dừng, chờ kết quả tiếp theo`);
                         stopTime = new Date().getTime();
+                    }
+                    if (isLose) {
+                        isLoseSecondTime = true;
                     }
                     isLose = true;
 
