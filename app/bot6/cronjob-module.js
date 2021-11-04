@@ -28,7 +28,6 @@ var orderPrice = 1;
 var isStop = false;
 var stopTime = new Date().getTime();
 var isLose = false;
-var isLoseSecondTime = false;
 const MINUTE_LONGTIMEMILIS = 60 * 1000;
 var tempOrder = null;
 async function startBot() {
@@ -92,15 +91,11 @@ async function startBot() {
                     insertToStatistics(botId, NOT_ORDER, 0, parseInt(result.result), 0);
                     let currrentTime = new Date().getTime();
                     if ((currrentTime - stopTime) >= 1 * MINUTE_LONGTIMEMILIS) {
-                        console.log(`tempOrder ${tempOrder}`);
-                        console.log(`result ${result.result}`);
-                        //let statistics = await getStatisticByLimit(botId, 3);
                         if (tempOrder === parseInt(result.result)) {
                             sendToTelegram(groupIds, `SẴN SÀNG VÀO LỆNH!`);
                             isStop = false;
                             initSessionVolatility(botId);
                             isLose = false;
-                            isLoseSecondTime = false;
                         } else {
                             console.log("Không đủ điều kiện đánh lệnh -> Đợi tiếp");
                             stopTime = new Date().getTime();
@@ -120,7 +115,6 @@ async function startBot() {
                     insertToStatistics(botId, WIN, NON_QUICK_ORDER, parseInt(result.result), percentInterest);
                     updateVolatiltyOfBot(botId, 0);
                     isLose = false;
-                    isLoseSecondTime = false;
                 } else { // THUA
                     var interest = -1 * orderPrice;
                     budget = roundNumber(budget + interest, 2);
@@ -130,14 +124,11 @@ async function startBot() {
                     insertToStatistics(botId, LOSE, NON_QUICK_ORDER, parseInt(result.result), percentInterest);
                     let volatility = dBbot.session_volatility + interest;
                     updateVolatiltyOfBot(botId, volatility);
-                    if (isLose && isLoseSecondTime) {
+                    if (isLose) {
                         isStop = true;
                         await sleep(2000);
                         sendToTelegram(groupIds, `Tạm dừng, chờ kết quả tiếp theo`);
                         stopTime = new Date().getTime();
-                    }
-                    if (isLose) {
-                        isLoseSecondTime = true;
                     }
                     isLose = true;
 

@@ -35,14 +35,15 @@ module.exports.getLastResult = function () {
     });
 }
 // Lấy 3 kết quả gần nhất
-module.exports.getLastThreeDataTradding = function () {
+module.exports.getLastThreeDataTradding = function (limit) {
     return new Promise((resolve, reject) => {
-        connection.query("select * from tradding_data order by id desc limit 3", function (err, result, fields) {
+        connection.query(`select * from tradding_data order by id desc limit ${limit}`, function (err, result, fields) {
             if (err) reject(err);
             resolve(result);
         });
     });
 }
+
 
 // Lấy số dư hiện tại
 module.exports.getBotInfo = function (botId) {
@@ -356,7 +357,7 @@ module.exports.stopAllGroup = function () {
 // kiểm tra kết quả có phải ở hàng 1 hay là không, (hàng 1 số phút khi tạo sẽ lẻ)
 module.exports.checkRowOneForStatistic = function () {
     var createdMinute = new Date().getMinutes();
-    if (createdMinute % 2 === 0) {
+    if (createdMinute % 2 !== 0) {
         console.log("Hàng 3");
         return false;
     }
@@ -366,7 +367,7 @@ module.exports.checkRowOneForStatistic = function () {
 
 module.exports.checkRowOneForOrder = function () {
     var createdMinute = new Date().getMinutes();
-    if (createdMinute % 2 === 0) {
+    if (createdMinute % 2 !== 0) {
         console.log("Hàng 2");
         return true;
     }
